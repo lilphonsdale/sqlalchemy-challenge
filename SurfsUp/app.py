@@ -66,37 +66,69 @@ def precipitation():
 
 @app.route("/api/v1.0/stations")
 def stations():
-    email = "peleke@example.com"
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+    all_stations = session.query(Station.station).all()
+    session.close()
 
-    return f"Questions? Comments? Complaints? Shoot an email to {email}."
+    return jsonify(all_stations)
 
 @app.route("/api/v1.0/tobs")
 def tobs():
-    info = {
-        
-    }
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+    one_year = dt.date(2017,8,23) - dt.timedelta(days=365)
+    active_year = session.query(Measurement.date, Measurement.tobs).\
+    filter(Measurement.station == "USC00519281").\
+    filter(Measurement.date > one_year).all()
+    session.close()
 
-    return jsonify(info)
+    all_temperatures = []
+    for date, tobs in active_year:
+        tobs_dict = {}
+        tobs_dict["date"] = date
+        tobs_dict["tobs"] = tobs
+        all_temperatures.append(tobs_dict)
+
+    return jsonify(all_temperatures)
 
 @app.route("/api/v1.0/start/<start>")
 def start(start):
-    info = {
-        "Name": "Khaled Karman",
-        "City": "Boston",
-        "Country": "USA"
-    }
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+    tmin = session.query(Measurement.date, func.min(Measurement.tobs)).filter(Measurement.date >= start).all()
+    tmax = session.query(Measurement.date, func.max(Measurement.tobs)).filter(Measurement.date >= start).all()
+    tavg = session.query(Measurement.date, func.avg(Measurement.tobs)).filter(Measurement.date >= start).all()
+    session.close()
 
-    return jsonify(info)
+    since_data = []
+    since_dict = {}
+    since_dict["min"] = tmin
+    since_dict["max"] = tmax
+    since_dict["avg"] = tavg
+    since_data.append(since_dict)
+
+    return jsonify(since_data)
 
 @app.route("/api/v1.0/<start>/<end>")
 def range():
-    info = {
-        "Name": "Khaled Karman",
-        "City": "Boston",
-        "Country": "USA"
-    }
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+    
+    
+    
+    session.query(Measurement.date, func.min(Measurement.tobs), func.max(Measurement.tobs), func.avg(Measurement.tobs)).\
+                            filter(Measurement.date >= start).all()
+    session.close()
 
-    return jsonify(info)
+    all_temperatures = []
+    for date, tobs in active_year:
+        tobs_dict = {}
+        tobs_dict["date"] = date
+        tobs_dict["tobs"] = tobs
+        all_temperatures.append(tobs_dict)
+
+    return jsonify(all_temperatures)
 
 
 # 4. Define main behavior
