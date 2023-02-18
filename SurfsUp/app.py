@@ -68,8 +68,10 @@ def precipitation():
 def stations():
     # Create our session (link) from Python to the DB
     session = Session(engine)
-    all_stations = session.query(Station.station).all()
+    station_list = session.query(Station.station).all()
     session.close()
+
+    all_stations = list(np.ravel(station_list))
 
     return jsonify(all_stations)
 
