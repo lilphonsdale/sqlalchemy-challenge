@@ -38,11 +38,11 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     return """Hello, world!
-    <br><a href="/api/v1.0/precipitation">Precipitation</a>
-    <br><a href="/api/v1.0/stations">Stations</a>
-    <br><a href="/api/v1.0/tobs">Tobs</a>
-    <br><a href="/api/v1.0/start">Start</a>
-    <br><a href="/api/v1.0/range">Range</a>
+    <br><a href="/api/v1.0/precipitation">Here's a jsonified list of Precipitation data</a>
+    <br><a href="/api/v1.0/stations">Here's a jsonified list of Stations</a>
+    <br><a href="/api/v1.0/tobs">Here's a jsonified list of Temperature observationsTobs</a>
+    <br><a href="/api/v1.0/start">Add a Start date in YYYY-MM-DD format as a parameter to the URL to get data since that data</a>
+    <br><a href="/api/v1.0/range">Add Start/End dates in YYYY-MM-DD format as parameters to the URL to get data from the range between them</a>
     """
 
 
@@ -103,34 +103,24 @@ def start(start):
     tavg = session.query(Measurement.date, func.avg(Measurement.tobs)).filter(Measurement.date >= start).all()
     session.close()
 
-    since_data = []
-    since_dict = {}
-    since_dict["min"] = tmin
-    since_dict["max"] = tmax
-    since_dict["avg"] = tavg
-    since_data.append(since_dict)
+    since_data = [tmin, tmax, tavg]
+    since_list = list(np.ravel(since_data))
 
-    return jsonify(since_data)
+    return jsonify(since_list)
 
-@app.route("/api/v1.0/<start>/<end>")
-def range():
+@app.route("/api/v1.0/range/<start>/<end>")
+def range(start, end):
     # Create our session (link) from Python to the DB
     session = Session(engine)
-    
-    
-    
-    session.query(Measurement.date, func.min(Measurement.tobs), func.max(Measurement.tobs), func.avg(Measurement.tobs)).\
-                            filter(Measurement.date >= start).all()
+    rangemin = session.query(Measurement.date, func.min(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
+    rangemax = session.query(Measurement.date, func.max(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
+    rangeavg = session.query(Measurement.date, func.avg(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
     session.close()
 
-    all_temperatures = []
-    for date, tobs in active_year:
-        tobs_dict = {}
-        tobs_dict["date"] = date
-        tobs_dict["tobs"] = tobs
-        all_temperatures.append(tobs_dict)
+    range_data = [rangemin, rangemax, rangeavg]
+    range_list = list(np.ravel(range_data))
 
-    return jsonify(all_temperatures)
+    return jsonify(range_list)
 
 
 # 4. Define main behavior
