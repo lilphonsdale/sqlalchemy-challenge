@@ -40,9 +40,9 @@ def index():
     return """Hello, world!
     <br><a href="/api/v1.0/precipitation">Here's a jsonified list of Precipitation data</a>
     <br><a href="/api/v1.0/stations">Here's a jsonified list of Stations</a>
-    <br><a href="/api/v1.0/tobs">Here's a jsonified list of Temperature observationsTobs</a>
-    <br><a href="/api/v1.0/start">Add a Start date in YYYY-MM-DD format as a parameter to the URL to get data since that data</a>
-    <br><a href="/api/v1.0/range">Add Start/End dates in YYYY-MM-DD format as parameters to the URL to get data from the range between them</a>
+    <br><a href="/api/v1.0/tobs">Here's a jsonified list of Temperature observations</a>
+    <br><a href="/api/v1.0/start">Add a Start date in YYYY-MM-DD format as a parameter to the URL to get data since that data: /api/v1.0/start/YYYY-MM-DD</a>
+    <br><a href="/api/v1.0/range">Add Start/End dates in YYYY-MM-DD format as parameters to the URL to get data from the range between them: /api/v1.0/range/YYYY-MM-DD/YYYY-MM-DD</a>
     """
 
 
@@ -53,6 +53,7 @@ def precipitation():
     one_year = dt.date(2017,8,23) - dt.timedelta(days=365)
     rain = session.query(Measurement.date, Measurement.prcp).filter(Measurement.date > one_year).all()
     session.close()
+    
 
     all_precipitation = []
     for date, prcp in rain:
